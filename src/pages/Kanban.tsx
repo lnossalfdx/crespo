@@ -40,6 +40,7 @@ interface Column {
 
 const columns: Column[] = [
   { id: 'novo', label: 'Novo Lead' },
+  { id: 'na', label: 'NA' },
   { id: 'qualificando', label: 'Qualificando' },
   { id: 'proposta', label: 'Proposta Enviada' },
   { id: 'negociacao', label: 'Em Negociação' },
@@ -47,13 +48,14 @@ const columns: Column[] = [
   { id: 'perdido', label: 'Perdido' },
 ];
 
-const stageBadgeVariant: Record<KanbanStage, 'novo' | 'qualificando' | 'proposta' | 'negociacao' | 'ganho' | 'perdido'> = {
+const stageBadgeVariant: Record<KanbanStage, 'novo' | 'qualificando' | 'proposta' | 'negociacao' | 'ganho' | 'perdido' | 'na'> = {
   novo: 'novo',
   qualificando: 'qualificando',
   proposta: 'proposta',
   negociacao: 'negociacao',
   ganho: 'ganho',
   perdido: 'perdido',
+  na: 'na',
 };
 
 interface LeadCardProps {
@@ -193,6 +195,7 @@ const stageColumnLabel: Record<string, string> = {
   negociacao: 'Em Negociação',
   ganho: 'Ganho',
   perdido: 'Perdido',
+  na: 'NA',
 };
 
 type EditLeadFormData = {

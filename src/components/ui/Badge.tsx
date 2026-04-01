@@ -12,6 +12,7 @@ type BadgeVariant =
   | 'negociacao'
   | 'ganho'
   | 'perdido'
+  | 'na'
   | 'ativo'
   | 'inativo'
   | 'prospecto'
@@ -37,6 +38,7 @@ const variantClasses: Record<BadgeVariant, string> = {
   negociacao: 'bg-yellow-900/50 text-yellow-300 border border-yellow-800',
   ganho: 'bg-green-900/50 text-green-300 border border-green-800',
   perdido: 'bg-red-900/50 text-red-300 border border-red-800',
+  na: 'bg-gray-900/80 text-gray-500 border border-gray-700',
   ativo: 'bg-green-900/50 text-green-300 border border-green-800',
   inativo: 'bg-gray-700/60 text-gray-400 border border-gray-600',
   prospecto: 'bg-blue-900/50 text-blue-300 border border-blue-800',

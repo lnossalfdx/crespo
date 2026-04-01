@@ -62,7 +62,7 @@ export interface Lead {
   value: number;
   setup?: number;
   mensalidade?: number;
-  stage: 'novo' | 'qualificando' | 'proposta' | 'negociacao' | 'ganho' | 'perdido';
+  stage: 'novo' | 'qualificando' | 'proposta' | 'negociacao' | 'ganho' | 'perdido' | 'na';
   createdAt: string;
   lastActivity: string;
   notes: string;

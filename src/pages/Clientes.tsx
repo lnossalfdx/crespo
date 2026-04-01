@@ -165,15 +165,6 @@ const ImportPanel: React.FC = () => {
             <Upload className="w-3.5 h-3.5" />
             Importar mais
           </button>
-          {pending.length > 0 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); acceptAll(); }}
-              className="flex items-center gap-1.5 text-xs text-white bg-gray-700 hover:bg-gray-600 transition-colors px-2 py-1 rounded"
-            >
-              <CheckCircle className="w-3.5 h-3.5" />
-              Aceitar todos
-            </button>
-          )}
           <button
             onClick={(e) => { e.stopPropagation(); clearPending(); setAccepted(new Set()); }}
             className="p-1 text-gray-600 hover:text-gray-400 transition-colors"
