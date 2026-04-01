@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Grid3X3, List, Phone, Mail, Upload, CheckCircle, X, FileSpreadsheet, ChevronDown, ChevronUp, Trash2, UserPlus } from 'lucide-react';
+import { Search, Grid3X3, List, Phone, Mail, Upload, CheckCircle, X, FileSpreadsheet, ChevronDown, ChevronUp, Trash2, UserPlus, PhoneCall, PhoneOff, Building2, AtSign, DollarSign, StickyNote } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { Card } from '../components/ui/Card';
@@ -67,6 +67,165 @@ function mapRow(row: Record<string, unknown>): Omit<PendingLead, 'id' | 'created
 }
 
 /* ── Import panel ─────────────────────────────────────────────────────────── */
+/* ── Atendimento Modal ── */
+interface AtendimentoModalProps {
+  lead: PendingLead;
+  onAtendeu: () => Promise<void>;
+  onNaoAtendeu: () => Promise<void>;
+  onClose: () => void;
+}
+
+const AtendimentoModal: React.FC<AtendimentoModalProps> = ({ lead, onAtendeu, onNaoAtendeu, onClose }) => {
+  const [loading, setLoading] = useState<'atendeu' | 'nao' | null>(null);
+
+  const handleAtendeu = async () => {
+    setLoading('atendeu');
+    await onAtendeu();
+  };
+  const handleNao = async () => {
+    setLoading('nao');
+    await onNaoAtendeu();
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.88, y: 24 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.88, y: 24 }}
+          transition={{ type: 'spring', stiffness: 340, damping: 28 }}
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-md overflow-hidden"
+          style={{
+            background: 'linear-gradient(145deg, #111 0%, #0a0a0a 100%)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '24px',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06)',
+          }}
+        >
+          {/* Top glow */}
+          <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '180px', background: 'radial-gradient(ellipse at 50% -20%, rgba(255,255,255,0.06) 0%, transparent 70%)' }} />
+
+          {/* Header */}
+          <div className="relative px-6 pt-6 pb-4 border-b border-white/5">
+            <button onClick={onClose} className="absolute top-5 right-5 text-gray-600 hover:text-white transition-colors p-1">
+              <X className="w-4 h-4" />
+            </button>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-black flex-shrink-0"
+                style={{ background: 'linear-gradient(135deg,#fff,#d4d4d4)', color: '#000', boxShadow: '0 4px 20px rgba(255,255,255,0.15)' }}>
+                {lead.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-white font-bold text-base leading-tight">{lead.name}</p>
+                <p className="text-gray-500 text-xs mt-0.5">Lead importado</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Info grid */}
+          <div className="relative px-6 py-4 grid grid-cols-2 gap-3">
+            {[
+              { icon: Building2, label: 'Empresa', value: lead.company || '—' },
+              { icon: Phone, label: 'Telefone', value: lead.phone || '—' },
+              { icon: AtSign, label: 'E-mail', value: lead.email || '—' },
+              { icon: DollarSign, label: 'Valor', value: lead.value > 0 ? `R$ ${lead.value.toLocaleString('pt-BR')}` : '—' },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Icon className="w-3 h-3 text-gray-600" />
+                  <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">{label}</span>
+                </div>
+                <p className="text-xs text-gray-300 font-medium truncate">{value}</p>
+              </div>
+            ))}
+            {lead.notes && (
+              <div className="col-span-2 rounded-xl p-3" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <StickyNote className="w-3 h-3 text-gray-600" />
+                  <span className="text-[10px] font-semibold text-gray-600 uppercase tracking-wider">Observações</span>
+                </div>
+                <p className="text-xs text-gray-300 leading-relaxed line-clamp-2">{lead.notes}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Divider + question */}
+          <div className="relative px-6 pb-2">
+            <div className="h-px w-full mb-4" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent)' }} />
+            <p className="text-center text-xs text-gray-500 font-medium uppercase tracking-widest mb-4">O cliente atendeu?</p>
+
+            <div className="grid grid-cols-2 gap-3 pb-6">
+              {/* Não Atendeu */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleNao}
+                disabled={loading !== null}
+                className="relative flex flex-col items-center gap-2 py-4 rounded-2xl overflow-hidden transition-all"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(239,68,68,0.12) 0%, rgba(185,28,28,0.08) 100%)',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                  boxShadow: '0 8px 24px rgba(239,68,68,0.08)',
+                  opacity: loading === 'atendeu' ? 0.4 : 1,
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                  {loading === 'nao'
+                    ? <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                    : <PhoneOff className="w-5 h-5 text-red-400" />}
+                </div>
+                <span className="text-sm font-bold text-red-400">Não Atendeu</span>
+                <span className="text-[10px] text-red-500/60 font-medium">→ Mover para NA</span>
+              </motion.button>
+
+              {/* Atendeu */}
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={handleAtendeu}
+                disabled={loading !== null}
+                className="relative flex flex-col items-center gap-2 py-4 rounded-2xl overflow-hidden transition-all"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 100%)',
+                  border: '1px solid rgba(255,255,255,0.18)',
+                  boxShadow: '0 8px 24px rgba(255,255,255,0.05)',
+                  opacity: loading === 'nao' ? 0.4 : 1,
+                }}
+              >
+                {/* shimmer */}
+                <motion.div
+                  className="absolute inset-0 pointer-events-none"
+                  animate={{ x: ['-120%', '220%'] }}
+                  transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 3 }}
+                  style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent)', width: '50%' }}
+                />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center relative z-10"
+                  style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)' }}>
+                  {loading === 'atendeu'
+                    ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    : <PhoneCall className="w-5 h-5 text-white" />}
+                </div>
+                <span className="text-sm font-bold text-white relative z-10">Atendeu</span>
+                <span className="text-[10px] text-gray-500 font-medium relative z-10">→ Qualificando</span>
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
 const ImportPanel: React.FC = () => {
   const { pending, addPending, removePending, clearPending } = useImportStore();
   const { addLead } = useLeadsStore();
@@ -74,6 +233,7 @@ const ImportPanel: React.FC = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(true);
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
+  const [atendimentoLead, setAtendimentoLead] = useState<PendingLead | null>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -91,7 +251,7 @@ const ImportPanel: React.FC = () => {
     e.target.value = '';
   };
 
-  const acceptOne = async (lead: PendingLead) => {
+  const finishAccept = async (lead: PendingLead, stage: 'qualificando' | 'na') => {
     await Promise.all([
       addLead({
         name: lead.name,
@@ -99,7 +259,7 @@ const ImportPanel: React.FC = () => {
         phone: lead.phone,
         email: lead.email,
         value: lead.value,
-        stage: 'novo',
+        stage,
         createdAt: new Date().toISOString(),
         lastActivity: new Date().toISOString(),
         notes: lead.notes,
@@ -121,6 +281,7 @@ const ImportPanel: React.FC = () => {
     ]);
     void useLeadAcceptancesStore.getState().recordAcceptance();
     setAccepted((prev) => new Set(prev).add(lead.id));
+    setAtendimentoLead(null);
     setTimeout(() => void removePending(lead.id), 800);
   };
 
@@ -224,7 +385,7 @@ const ImportPanel: React.FC = () => {
                             ) : (
                               <div className="flex items-center justify-end gap-2">
                                 <button
-                                  onClick={() => acceptOne(lead)}
+                                  onClick={() => setAtendimentoLead(lead)}
                                   className="text-xs bg-white text-black px-2.5 py-1 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                                 >
                                   Aceitar
@@ -248,6 +409,16 @@ const ImportPanel: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Atendimento Modal */}
+      {atendimentoLead && (
+        <AtendimentoModal
+          lead={atendimentoLead}
+          onAtendeu={() => finishAccept(atendimentoLead, 'qualificando')}
+          onNaoAtendeu={() => finishAccept(atendimentoLead, 'na')}
+          onClose={() => setAtendimentoLead(null)}
+        />
+      )}
     </div>
   );
 };

@@ -4,6 +4,7 @@ import { AnimatePresence } from 'framer-motion';
 import { useAppStore } from './store/useAppStore';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
+import { MobileNav } from './components/layout/MobileNav';
 
 // Lazy load all pages
 const Login = lazy(() => import('./pages/Login').then((m) => ({ default: m.Login })));
@@ -35,6 +36,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
         </AnimatePresence>
       </Suspense>
     </div>
+    <MobileNav />
   </div>
 );
 

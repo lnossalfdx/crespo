@@ -20,7 +20,7 @@ export const PageWrapper: React.FC<PageWrapperProps> = ({ children, className = 
       animate="animate"
       exit="exit"
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className={`flex-1 overflow-y-auto p-6 ${className}`}
+      className={`flex-1 overflow-y-auto p-3 md:p-6 pb-20 md:pb-6 ${className}`}
     >
       {children}
     </motion.div>

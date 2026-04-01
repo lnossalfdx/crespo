@@ -31,7 +31,7 @@ export const Header: React.FC = () => {
   const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1);
 
   return (
-    <header className="h-16 bg-gray-950 border-b border-gray-800 flex items-center justify-between px-6 flex-shrink-0 z-10">
+    <header className="h-16 bg-gray-950 border-b border-gray-800 flex items-center justify-between px-3 md:px-6 flex-shrink-0 z-10">
       <div>
         <h1 className="text-lg font-semibold text-white">{pageTitle}</h1>
         <p className="text-xs text-gray-500">{todayCapitalized}</p>

@@ -4,6 +4,10 @@ import {
   closestCenter,
   DragOverlay,
   useDroppable,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  TouchSensor,
 } from '@dnd-kit/core';
 import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import {
@@ -623,6 +627,11 @@ export const Kanban: React.FC = () => {
   const [addModalStage, setAddModalStage] = useState<KanbanStage | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
+  );
+
   const visibleLeads = leads.filter((l) => {
     if (isAdmin && viewAll) return true;
     if (!l.assignedTo) return true; // unassigned = visible to all
@@ -709,6 +718,7 @@ export const Kanban: React.FC = () => {
 
       <div className="overflow-x-auto pb-4">
         <DndContext
+          sensors={sensors}
           collisionDetection={closestCenter}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}

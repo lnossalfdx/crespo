@@ -56,7 +56,7 @@ export const Sidebar: React.FC = () => {
         variants={containerVariants}
         animate={sidebarCollapsed ? 'closed' : 'open'}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-        className="relative flex flex-col h-screen bg-gray-950 border-r border-gray-800 z-20 flex-shrink-0 overflow-hidden"
+        className="hidden md:flex flex-col h-screen bg-gray-950 border-r border-gray-800 z-20 flex-shrink-0 overflow-hidden relative"
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-4 py-5 border-b border-gray-800">
