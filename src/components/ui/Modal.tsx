@@ -47,7 +47,7 @@ export const Modal: React.FC<ModalProps> = ({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -63,11 +63,20 @@ export const Modal: React.FC<ModalProps> = ({
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
             className={`
               relative z-10 w-full ${sizeClasses[size]}
-              bg-gray-900 border border-gray-700 rounded-xl shadow-2xl
+              bg-gray-900 border-t sm:border border-gray-700
+              rounded-t-2xl sm:rounded-xl shadow-2xl
+              flex flex-col
+              max-h-[92dvh] sm:max-h-[90vh]
             `}
+            style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           >
+            {/* drag handle on mobile */}
+            <div className="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+              <div className="w-10 h-1 rounded-full bg-gray-700" />
+            </div>
+
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 flex-shrink-0">
                 <h2 className="text-lg font-semibold text-white">{title}</h2>
                 <button
                   onClick={onClose}
@@ -85,7 +94,7 @@ export const Modal: React.FC<ModalProps> = ({
                 <X className="w-5 h-5" />
               </button>
             )}
-            <div className="p-6">{children}</div>
+            <div className="p-6 overflow-y-auto flex-1">{children}</div>
           </motion.div>
         </div>
       )}
