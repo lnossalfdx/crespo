@@ -10,7 +10,7 @@ interface LeadsState {
   loading: boolean;
   initialize: () => Promise<void>;
   fetchLeads: () => Promise<void>;
-  addLead: (lead: Omit<Lead, 'id'>) => Promise<void>;
+  addLead: (lead: Omit<Lead, 'id'>) => Promise<Lead>;
   updateLead: (id: string, updates: Partial<Lead>) => Promise<void>;
   moveLead: (id: string, stage: Lead['stage']) => Promise<void>;
   deleteLead: (id: string) => Promise<void>;
@@ -94,7 +94,9 @@ export const useLeadsStore = create<LeadsState>((set, get) => ({
       .single();
 
     if (error) throw error;
-    set((state) => ({ leads: [mapLead(data), ...state.leads] }));
+    const newLead = mapLead(data);
+    set((state) => ({ leads: [newLead, ...state.leads] }));
+    return newLead;
   },
 
   updateLead: async (id, updates) => {

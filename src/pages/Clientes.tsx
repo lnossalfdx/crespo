@@ -69,7 +69,7 @@ function mapRow(row: Record<string, unknown>): Omit<PendingLead, 'id' | 'created
 /* ── Import panel ─────────────────────────────────────────────────────────── */
 /* ── Atendimento Modal ── */
 interface AtendimentoModalProps {
-  lead: PendingLead;
+  lead: { name: string; company: string; phone: string; email: string; value: number; notes: string };
   onAtendeu: () => Promise<void>;
   onNaoAtendeu: () => Promise<void>;
   onClose: () => void;
@@ -184,7 +184,7 @@ const AtendimentoModal: React.FC<AtendimentoModalProps> = ({ lead, onAtendeu, on
                     ? <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
                     : <PhoneOff className="w-5 h-5 text-red-400" />}
                 </div>
-                <span className="text-sm font-bold text-red-400">Não Atendeu</span>
+                <span className="text-sm font-bold text-red-400">Que meeer</span>
                 <span className="text-[10px] text-red-500/60 font-medium">→ Mover para NA</span>
               </motion.button>
 
@@ -228,12 +228,13 @@ const AtendimentoModal: React.FC<AtendimentoModalProps> = ({ lead, onAtendeu, on
 
 const ImportPanel: React.FC = () => {
   const { pending, addPending, removePending, clearPending } = useImportStore();
-  const { addLead } = useLeadsStore();
+  const { addLead, updateLead } = useLeadsStore();
   const { addClient } = useClientsStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(true);
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
   const [atendimentoLead, setAtendimentoLead] = useState<PendingLead | null>(null);
+  const [createdLeadId, setCreatedLeadId] = useState<string | null>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -251,15 +252,17 @@ const ImportPanel: React.FC = () => {
     e.target.value = '';
   };
 
-  const finishAccept = async (lead: PendingLead, stage: 'qualificando' | 'na') => {
-    await Promise.all([
+  // Step 1: clicking "Aceitar" immediately creates the lead (stage: novo) + client,
+  // removes from pending, records acceptance, then opens the modal to decide the stage.
+  const handleAccept = async (lead: PendingLead) => {
+    const [newLead] = await Promise.all([
       addLead({
         name: lead.name,
         company: lead.company,
         phone: lead.phone,
         email: lead.email,
         value: lead.value,
-        stage,
+        stage: 'novo',
         createdAt: new Date().toISOString(),
         lastActivity: new Date().toISOString(),
         notes: lead.notes,
@@ -281,8 +284,22 @@ const ImportPanel: React.FC = () => {
     ]);
     void useLeadAcceptancesStore.getState().recordAcceptance();
     setAccepted((prev) => new Set(prev).add(lead.id));
-    setAtendimentoLead(null);
     setTimeout(() => void removePending(lead.id), 800);
+    setCreatedLeadId(newLead.id);
+    setAtendimentoLead(lead);
+  };
+
+  // Step 2: modal decision — just moves the already-created lead
+  const handleAtendeu = async () => {
+    if (createdLeadId) await updateLead(createdLeadId, { stage: 'qualificando' });
+    setAtendimentoLead(null);
+    setCreatedLeadId(null);
+  };
+
+  const handleNaoAtendeu = async () => {
+    if (createdLeadId) await updateLead(createdLeadId, { stage: 'na' });
+    setAtendimentoLead(null);
+    setCreatedLeadId(null);
   };
 
 
@@ -385,7 +402,7 @@ const ImportPanel: React.FC = () => {
                             ) : (
                               <div className="flex items-center justify-end gap-2">
                                 <button
-                                  onClick={() => setAtendimentoLead(lead)}
+                                  onClick={() => void handleAccept(lead)}
                                   className="text-xs bg-white text-black px-2.5 py-1 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                                 >
                                   Aceitar
@@ -414,9 +431,9 @@ const ImportPanel: React.FC = () => {
       {atendimentoLead && (
         <AtendimentoModal
           lead={atendimentoLead}
-          onAtendeu={() => finishAccept(atendimentoLead, 'qualificando')}
-          onNaoAtendeu={() => finishAccept(atendimentoLead, 'na')}
-          onClose={() => setAtendimentoLead(null)}
+          onAtendeu={handleAtendeu}
+          onNaoAtendeu={handleNaoAtendeu}
+          onClose={() => { setAtendimentoLead(null); setCreatedLeadId(null); }}
         />
       )}
     </div>
