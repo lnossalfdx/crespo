@@ -124,11 +124,6 @@ const ImportPanel: React.FC = () => {
     setTimeout(() => void removePending(lead.id), 800);
   };
 
-  const acceptAll = async () => {
-    for (const lead of pending) {
-      await acceptOne(lead);
-    }
-  };
 
   if (pending.length === 0 && accepted.size === 0) {
     return (
