@@ -2,6 +2,7 @@ import { useClientsStore } from './useClientsStore';
 import { useEventsStore } from './useEventsStore';
 import { useFinanceStore } from './useFinanceStore';
 import { useImportStore } from './useImportStore';
+import { useLeadAcceptancesStore } from './useLeadAcceptancesStore';
 import { useLeadsStore } from './useLeadsStore';
 import { useProjectsStore } from './useProjectsStore';
 import { useSettingsStore } from './useSettingsStore';
@@ -16,4 +17,5 @@ export function resetAllDomainStores() {
   useEventsStore.getState().reset();
   useSettingsStore.getState().reset();
   useImportStore.getState().reset();
+  useLeadAcceptancesStore.getState().reset();
 }

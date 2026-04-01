@@ -4,6 +4,7 @@ import { useClientsStore } from '../store/useClientsStore';
 import { useEventsStore } from '../store/useEventsStore';
 import { useFinanceStore } from '../store/useFinanceStore';
 import { useImportStore } from '../store/useImportStore';
+import { useLeadAcceptancesStore } from '../store/useLeadAcceptancesStore';
 import { useLeadsStore } from '../store/useLeadsStore';
 import { useProjectsStore } from '../store/useProjectsStore';
 import { useSettingsStore } from '../store/useSettingsStore';
@@ -22,6 +23,7 @@ export function useSupabaseBootstrap() {
   const initializeEvents = useEventsStore((state) => state.initialize);
   const initializeSettings = useSettingsStore((state) => state.initialize);
   const initializeImport = useImportStore((state) => state.initialize);
+  const initializeAcceptances = useLeadAcceptancesStore((state) => state.initialize);
 
   useEffect(() => {
     void initializeAuth();
@@ -39,8 +41,10 @@ export function useSupabaseBootstrap() {
       initializeEvents(),
       initializeSettings(),
       initializeImport(),
+      initializeAcceptances(),
     ]);
   }, [
+    initializeAcceptances,
     initializeClients,
     initializeEvents,
     initializeFinance,

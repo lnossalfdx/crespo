@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { endOfMonth, eachWeekOfInterval, format, isSameDay, startOfMonth, subDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, DollarSign, RefreshCw, Plus, Calendar, MessageSquare, Activity } from 'lucide-react';
+import { TrendingUp, Users, DollarSign, RefreshCw, Plus, Calendar, MessageSquare, Activity, Trophy } from 'lucide-react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -16,6 +16,7 @@ import { useAppStore } from '../store/useAppStore';
 import { useEventsStore } from '../store/useEventsStore';
 import { useFinanceStore } from '../store/useFinanceStore';
 import { useLeadsStore } from '../store/useLeadsStore';
+import { useLeadAcceptancesStore } from '../store/useLeadAcceptancesStore';
 
 const eventTypeLabels = {
   reuniao: 'Reunião',
@@ -35,6 +36,7 @@ export const Dashboard: React.FC = () => {
   const { user } = useAppStore();
   const { leads } = useLeadsStore();
   const { events } = useEventsStore();
+  const todayRanking = useLeadAcceptancesStore((state) => state.todayRanking);
   const transactions = useFinanceStore((state) => state.transactions);
   const receitaAtual = useFinanceStore((state) => state.getTotalEntradas());
   const navigate = useNavigate();
@@ -284,6 +286,177 @@ export const Dashboard: React.FC = () => {
             </div>
           )}
         </Card>
+      </div>
+
+      {/* Gamification: Lead Acceptance Ranking */}
+      <div className="mb-8 rounded-2xl overflow-hidden relative" style={{
+        background: '#000',
+        border: '1px solid rgba(255,255,255,0.09)',
+        backgroundImage: 'radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)',
+        backgroundSize: '28px 28px',
+      }}>
+        {/* top spotlight */}
+        <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '220px', background: 'radial-gradient(ellipse at 50% -10%, rgba(255,255,255,0.055) 0%, transparent 70%)' }} />
+
+        <div className="relative p-6 pb-8">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <div className="flex items-center gap-2.5 mb-0.5">
+                <Trophy className="w-5 h-5 text-white" style={{ filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.5))' }} />
+                <h3 className="text-lg font-black text-white tracking-widest uppercase">Ranking Diário</h3>
+              </div>
+              <p className="text-xs text-gray-700 pl-8">quem aceita mais leads hoje leva a coroa</p>
+            </div>
+            <motion.div
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1.4, repeat: Infinity }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full"
+              style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)' }}
+            >
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500" style={{ boxShadow: '0 0 6px rgba(239,68,68,0.9)' }} />
+              <span className="text-xs text-red-400 font-bold tracking-widest">AO VIVO</span>
+            </motion.div>
+          </div>
+
+          {todayRanking.length === 0 ? (
+            <div className="py-16 text-center">
+              <motion.span
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="text-5xl mb-4 block"
+                style={{ filter: 'grayscale(1) drop-shadow(0 0 12px rgba(255,255,255,0.4))' }}
+              >👑</motion.span>
+              <p className="text-white font-bold mt-4">A coroa está disponível!</p>
+              <p className="text-xs text-gray-700 mt-1">Aceite um lead e entre no ranking</p>
+            </div>
+          ) : (
+            <>
+              {/* ── Podium ── */}
+              <div className="flex items-end justify-center gap-2 px-4 mb-0">
+
+                {/* 2nd */}
+                <div className="flex-1 flex flex-col items-center">
+                  {todayRanking[1] ? (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} className="flex flex-col items-center w-full">
+                      <div className="w-10 h-10 rounded-full mb-1.5 flex items-center justify-center text-sm font-black"
+                        style={{ background: 'linear-gradient(135deg,#3a3a3a,#1c1c1c)', color: '#888', border: '1.5px solid rgba(255,255,255,0.12)', boxShadow: '0 0 0 3px rgba(255,255,255,0.03)' }}>
+                        {todayRanking[1].userName.charAt(0).toUpperCase()}
+                      </div>
+                      <p className="text-xs text-gray-400 font-semibold truncate max-w-[80px] text-center leading-tight">{todayRanking[1].userName}</p>
+                      <p className="text-xs text-gray-700 mb-3 font-medium">{todayRanking[1].count} leads</p>
+                      <div className="w-full rounded-t-2xl relative overflow-hidden" style={{ height: '92px', background: 'linear-gradient(180deg,#252525 0%,#0f0f0f 100%)', borderTop: '1px solid rgba(255,255,255,0.13)', borderLeft: '1px solid rgba(255,255,255,0.05)', borderRight: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 -4px 30px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.07)' }}>
+                        <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)' }} />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-3xl font-black" style={{ color: 'rgba(255,255,255,0.18)', fontFamily: 'serif', lineHeight: 1 }}>2</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : <div className="flex-1" />}
+                </div>
+
+                {/* 1st */}
+                <div className="flex-1 flex flex-col items-center">
+                  <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} className="flex flex-col items-center w-full">
+                    <motion.span
+                      animate={{ y: [0, -6, 0] }}
+                      transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                      className="text-xl mb-0.5 block text-center"
+                      style={{ filter: 'grayscale(1) brightness(2) drop-shadow(0 0 10px rgba(255,255,255,0.7))' }}
+                    >👑</motion.span>
+                    <div className="w-14 h-14 rounded-full mb-1.5 flex items-center justify-center text-xl font-black"
+                      style={{ background: 'linear-gradient(135deg,#ffffff,#d4d4d4)', color: '#000', boxShadow: '0 4px 32px rgba(255,255,255,0.28), 0 0 0 2px rgba(255,255,255,0.18)' }}>
+                      {todayRanking[0].userName.charAt(0).toUpperCase()}
+                    </div>
+                    <p className="text-xs text-white font-black truncate max-w-[90px] text-center leading-tight">{todayRanking[0].userName}</p>
+                    <p className="text-xs text-gray-500 mb-3 font-semibold">{todayRanking[0].count} leads</p>
+                    <div className="w-full rounded-t-2xl relative overflow-hidden" style={{ height: '132px', background: 'linear-gradient(180deg,#353535 0%,#111 100%)', borderTop: '1px solid rgba(255,255,255,0.22)', borderLeft: '1px solid rgba(255,255,255,0.07)', borderRight: '1px solid rgba(255,255,255,0.07)', boxShadow: '0 -10px 60px rgba(255,255,255,0.07), 0 -2px 16px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.18)' }}>
+                      <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.9),transparent)' }} />
+                      {/* shimmer */}
+                      <motion.div
+                        className="absolute inset-0 pointer-events-none"
+                        animate={{ x: ['-120%', '220%'] }}
+                        transition={{ duration: 2.8, repeat: Infinity, repeatDelay: 4.5 }}
+                        style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)', width: '50%' }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-5xl font-black" style={{ color: 'rgba(255,255,255,0.12)', fontFamily: 'serif', lineHeight: 1, textShadow: '0 0 30px rgba(255,255,255,0.15)' }}>1</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* 3rd */}
+                <div className="flex-1 flex flex-col items-center">
+                  {todayRanking[2] ? (
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.22 }} className="flex flex-col items-center w-full">
+                      <div className="w-10 h-10 rounded-full mb-1.5 flex items-center justify-center text-sm font-black"
+                        style={{ background: 'linear-gradient(135deg,#222,#111)', color: '#555', border: '1.5px solid rgba(255,255,255,0.07)', boxShadow: '0 0 0 3px rgba(255,255,255,0.02)' }}>
+                        {todayRanking[2].userName.charAt(0).toUpperCase()}
+                      </div>
+                      <p className="text-xs text-gray-600 font-semibold truncate max-w-[80px] text-center leading-tight">{todayRanking[2].userName}</p>
+                      <p className="text-xs text-gray-800 mb-3 font-medium">{todayRanking[2].count} leads</p>
+                      <div className="w-full rounded-t-2xl relative overflow-hidden" style={{ height: '65px', background: 'linear-gradient(180deg,#1a1a1a 0%,#080808 100%)', borderTop: '1px solid rgba(255,255,255,0.08)', borderLeft: '1px solid rgba(255,255,255,0.03)', borderRight: '1px solid rgba(255,255,255,0.03)', boxShadow: '0 -4px 20px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                        <div className="absolute inset-x-0 top-0 h-px" style={{ background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)' }} />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <span className="text-2xl font-black" style={{ color: 'rgba(255,255,255,0.1)', fontFamily: 'serif', lineHeight: 1 }}>3</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  ) : <div className="flex-1" />}
+                </div>
+              </div>
+
+              {/* base line */}
+              <div style={{ height: '1px', background: 'linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent)', marginBottom: '20px' }} />
+
+              {/* 4th+ list */}
+              {todayRanking.length > 3 && (
+                <div className="space-y-1.5">
+                  {todayRanking.slice(3, 8).map((entry, idx) => {
+                    const rank = idx + 4;
+                    const barMax = todayRanking[0].count;
+                    const barPct = Math.round((entry.count / barMax) * 100);
+                    const isCurrentUser = entry.userId === user?.id;
+                    return (
+                      <motion.div
+                        key={entry.userId}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.05 + 0.3 }}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+                        style={{ background: isCurrentUser ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.015)', border: isCurrentUser ? '1px solid rgba(255,255,255,0.14)' : '1px solid rgba(255,255,255,0.04)' }}
+                      >
+                        <span className="text-xs font-black w-5 text-center flex-shrink-0" style={{ color: 'rgba(255,255,255,0.2)' }}>#{rank}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className={`text-xs font-semibold truncate ${isCurrentUser ? 'text-white' : 'text-gray-500'}`}>
+                              {entry.userName}
+                              {isCurrentUser && <span className="ml-1 font-normal" style={{ color: 'rgba(255,255,255,0.25)' }}>(você)</span>}
+                            </span>
+                            <span className="text-xs font-bold ml-2 flex-shrink-0" style={{ color: isCurrentUser ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.25)' }}>{entry.count}</span>
+                          </div>
+                          <div className="h-px rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                            <motion.div
+                              className="h-full rounded-full"
+                              style={{ background: isCurrentUser ? '#fff' : 'rgba(255,255,255,0.18)' }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${barPct}%` }}
+                              transition={{ duration: 0.7, delay: idx * 0.05 + 0.5, ease: 'easeOut' }}
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                  {todayRanking.length > 8 && (
+                    <p className="text-xs text-center pt-1" style={{ color: 'rgba(255,255,255,0.15)' }}>+{todayRanking.length - 8} outros hoje</p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Activity Feed */}

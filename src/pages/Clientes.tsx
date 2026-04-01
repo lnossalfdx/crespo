@@ -18,6 +18,7 @@ import { brlToFloat } from '../components/ui/currency';
 import { useForm } from 'react-hook-form';
 import { useImportStore } from '../store/useImportStore';
 import type { PendingLead } from '../store/useImportStore';
+import { useLeadAcceptancesStore } from '../store/useLeadAcceptancesStore';
 import { useDebounce } from '../hooks/useDebounce';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -69,6 +70,7 @@ function mapRow(row: Record<string, unknown>): Omit<PendingLead, 'id' | 'created
 const ImportPanel: React.FC = () => {
   const { pending, addPending, removePending, clearPending } = useImportStore();
   const { addLead } = useLeadsStore();
+  const { addClient } = useClientsStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(true);
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
@@ -90,18 +92,34 @@ const ImportPanel: React.FC = () => {
   };
 
   const acceptOne = async (lead: PendingLead) => {
-    await addLead({
-      name: lead.name,
-      company: lead.company,
-      phone: lead.phone,
-      email: lead.email,
-      value: lead.value,
-      stage: 'novo',
-      createdAt: new Date().toISOString(),
-      lastActivity: new Date().toISOString(),
-      notes: lead.notes,
-      tags: ['importado'],
-    });
+    await Promise.all([
+      addLead({
+        name: lead.name,
+        company: lead.company,
+        phone: lead.phone,
+        email: lead.email,
+        value: lead.value,
+        stage: 'novo',
+        createdAt: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        notes: lead.notes,
+        tags: ['importado'],
+      }),
+      addClient({
+        name: lead.name,
+        company: lead.company,
+        phone: lead.phone,
+        email: lead.email,
+        status: 'prospecto',
+        tags: ['importado'],
+        lastInteraction: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        totalValue: lead.value,
+        deals: [],
+        notes: lead.notes,
+      }),
+    ]);
+    void useLeadAcceptancesStore.getState().recordAcceptance();
     setAccepted((prev) => new Set(prev).add(lead.id));
     setTimeout(() => void removePending(lead.id), 800);
   };
